@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lotto Tracker - Sales Management</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="app"></div>
+
+    <!-- LOGIN PAGE -->
+    <div id="loginPage" class="page active">
+        <div class="login-container">
+            <div class="login-box">
+                <h1 class="title">LOTTO</h1>
+                <h2 class="subtitle">TRACKER</h2>
+                <div class="accent-line"></div>
+                <p class="tagline">Sales Management System</p>
+
+                <form id="loginForm" class="form-card">
+                    <h3>ADMIN LOGIN</h3>
+                    
+                    <div class="form-group">
+                        <label>Username</label>
+                        <input type="text" id="loginUsername" placeholder="Enter your username" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>4-Digit PIN</label>
+                        <input type="password" id="loginPin" placeholder="0000" maxlength="4" inputmode="numeric" required>
+                        <small id="pinCounter">0/4 digits</small>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-full">Sign In</button>
+                    
+                    <div class="mt-20">
+                        <button id="guestViewBtn" type="button" class="btn-link">View as Guest</button>
+                    </div>
+                    
+                    <p class="form-hint">Admin credentials required for full access</p>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- DASHBOARD PAGE -->
+    <div id="dashboardPage" class="page">
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h2>LOTTO<br>TRACKER</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active" data-page="dashboard">DASHBOARD</a>
+                <a href="#" class="nav-item" data-page="inventory">INVENTORY</a>
+                <a href="#" class="nav-item" data-page="daily-sales">DAILY SALES</a>
+                <a href="#" class="nav-item" data-page="weekly">WEEKLY SUMMARY</a>
+                <a href="#" class="nav-item" data-page="monthly">MONTHLY SUMMARY</a>
+                <a href="#" class="nav-item" data-page="lookup">SALES LOOKUP</a>
+                <a href="#" class="nav-item" data-page="reports">REPORTS</a>
+                <a href="#" class="nav-item" data-page="insights">INSIGHTS</a>
+                <a href="#" class="nav-item admin-only" data-page="users">USERS</a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <p class="user-label">USER</p>
+                    <p class="user-name" id="currentUser">-</p>
+                    <p class="user-role" id="currentRole" style="display:none;">ADMIN</p>
+                </div>
+                <button id="logoutBtn" class="btn btn-secondary btn-full">LOGOUT</button>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <!-- Dashboard Content -->
+            <div id="dashboard-content" class="content-section active">
+                <div class="header">
+                    <h1>WELCOME</h1>
+                    <div class="accent-line"></div>
+                    <p class="subtitle-text">SALES MANAGEMENT SYSTEM</p>
+                </div>
+
+                <div class="stats-grid mb-20">
+                    <div class="stat-card">
+                        <span class="label">Current Book Inventory</span>
+                        <span class="value" id="dashInventoryCount">0</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="label">Today's Sales</span>
+                        <span class="value" id="dashTodaySales">$0.00</span>
+                    </div>
+                </div>
+
+                <div class="grid-2">
+                    <div class="card">
+                        <h3>QUICK ACTIONS</h3>
+                        <button class="btn btn-primary btn-full mb-20" onclick="switchPage('daily-sales')">ENTER TODAY'S SALES</button>
+                        <button class="btn btn-secondary btn-full mb-20" onclick="switchPage('inventory')">MANAGE INVENTORY</button>
+                        <button class="btn btn-secondary btn-full" onclick="switchPage('lookup')">VIEW SALES HISTORY</button>
+                    </div>
+                    <div class="card">
+                        <h3>REPORTS</h3>
+                        <button class="btn btn-secondary btn-full mb-20" onclick="switchPage('weekly')">WEEKLY SUMMARY</button>
+                        <button class="btn btn-secondary btn-full mb-20" onclick="switchPage('monthly')">MONTHLY SUMMARY</button>
+                        <button class="btn btn-secondary btn-full" onclick="switchPage('reports')">GENERATE REPORTS</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Inventory Content -->
+            <div id="inventory-content" class="content-section">
+                <div class="header">
+                    <h1>INVENTORY</h1>
+                    <div class="accent-line"></div>
+                    <p class="subtitle-text">MANAGE BOOKS, ACTIVATIONS & RETURNS</p>
+                </div>
+
+                <div class="stat-card mb-20" style="max-width: 300px; margin: 0 auto 30px;">
+                    <span class="label">Total Books in Stock</span>
+                    <span class="value" id="inventoryCount">0</span>
+                </div>
+
+                <div class="grid-3">
+                    <button class="btn btn-primary" onclick="openAddDeliveryModal()">+ ADD DELIVERY</button>
+                    <button class="btn btn-secondary" onclick="openAddGameModal()">ACTIVATE GAME</button>
+                    <button class="btn btn-danger" onclick="openReturnBookModal()">RETURN BOOK</button>
+                </div>
+
+                <div class="card mt-20">
+                    <h3>INVENTORY HISTORY</h3>
+                    <div class="tabs">
+                        <button class="tab-btn active" onclick="filterHistory('all')">ALL</button>
+                        <button class="tab-btn" onclick="filterHistory('delivery')">DELIVERIES</button>
+                        <button class="tab-btn" onclick="filterHistory('activation')">ACTIVATIONS</button>
+                        <button class="tab-btn" onclick="filterHistory('return')">RETURNS</button>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>DATE</th>
+                                <th>TYPE</th>
+                                <th>QTY / PRICE</th>
+                                <th>GAME NAME / NOTES</th>
+                                <th>CHANGE</th>
+                                <th>ACTIONS</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inventoryHistoryBody">
+                            <!-- History will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Daily Sales Content -->
+            <div id="daily-sales-content" class="content-section">
+                <div class="header">
+                    <h1>DAILY SALES</h1>
+                    <div class="accent-line"></div>
+                    <p class="subtitle-text">ENTER OR EDIT DAILY SALES</p>
+                </div>
+
+                <div class="card">
+                    <form id="dailySalesForm">
+                        <div class="form-group">
+                            <label>Select Date</label>
+                            <input type="date" id="salesDate" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Scratch-Off Sales ($)</label>
+                            <input type="number" id="scratchOffSales" step="0.01" min="0" value="0" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Lotto Sales ($)</label>
+                            <input type="number" id="lottoSales" step="0.01" min="0" value="0" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Notes (Optional)</label>
+                            <textarea id="salesNotes" rows="3"></textarea>
+                        </div>
+
+                        <div class="total-display">
+                            <p>Daily Total: <strong id="dailyTotal">$0.00</strong></p>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-full">SAVE SALES ENTRY</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Weekly Summary Content -->
+            <div id="weekly-content" class="content-section">
+                <div class="header">
+                    <h1>WEEKLY SUMMARY</h1>
+                    <div class="accent-line"></div>
+                    <p class="subtitle-text">SALES BREAKDOWN (MON - SUN)</p>
+                </div>
+
+                <div class="card">
+                    <div class="week-nav">
+                        <button class="btn btn-secondary" onclick="previousWeek()">← PREVIOUS</button>
+                        <div class="week-display">
+                            <p id="weekDisplay">-</p>
+                        </div>
+                        <button class="btn btn-secondary" onclick="nextWeek()">NEXT →</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>DAY</th>
+                                <th>SCRATCH-OFF</th>
+                                <th>LOTTO</th>
+                                <th>TOTAL</th>
+                            </tr>
+                        </thead>
+                        <tbody id="weeklyTableBody">
+                            <!-- Weekly data will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Monthly Summary Content -->
+            <div id="monthly-content" class="content-section">
+                <div class="header">
+                    <h1>MONTHLY SUMMARY</h1>
+                    <div class="accent-line"></div>
+                    <p class="subtitle-text">CALENDAR VIEW OF SALES & ACTIVATIONS</p>
+                </div>
+
+                <div class="card">
+                    <div class="month-nav">
+                        <button class="btn btn-secondary" onclick="previousMonth()">← PREVIOUS</button>
+                        <div class="month-display">
+                            <p id="monthDisplay">-</p>
+                        </div>
+                        <button class="btn btn-secondary" onclick="nextMonth()">NEXT →</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="calendar-grid" id="calendarGrid">
+                        <!-- Calendar will be populated here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sales Lookup Content -->
+            <div id="lookup-content" class="content-section">
+                <div class="header">
+                    <h1>SALES LOOKUP</h1>
+                    <div class="accent-line"></div>
+                    <p class="subtitle-text">SEARCH SALES HISTORY</p>
+                </div>
+
+                <div class="card">
+                    <div class="tabs">
+                        <button class="tab-btn active" onclick="switchLookupMode('single')">SINGLE DATE</button>
+                        <button class="tab-btn" onclick="switchLookupMode('range')">DATE RANGE</button>
+                    </div>
+
+                    <div id="singleLookup" class="lookup-mode active">
+                        <div class="form-group">
+                            <label>Select Date</label>
+                            <input type="date" id="lookupDate">
+                        </div>
+                        <button class="btn btn-primary" onclick="performLookup()">SEARCH</button>
+                    </div>
+
+                    <div id="rangeLookup" class="lookup-mode">
+                        <div class="grid-2">
+                            <div class="form-group">
+                                <label>Start Date</label>
+                                <input type="date" id="lookupStart">
+                            </div>
+                            <div class="form-group">
+                                <label>End Date</label>
+                                <input type="date" id="lookupEnd">
+                            </div>
+                        </div>
+                        <button class="btn btn-primary" onclick="performLookup()">SEARCH RANGE</button>
+                    </div>
+                </div>
+
+                <div id="lookupResults" class="card hidden">
+                    <h3>RESULTS</h3>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>DATE</th>
+                                <th>SCRATCH-OFF</th>
+                                <th>LOTTO</th>
+                                <th>TOTAL</th>
+                            </tr>
+                        </thead>
+                        <tbody id="lookupTableBody">
+                            <!-- Results will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Reports Content -->
+            <div id="reports-content" class="content-section">
+                <div class="header">
+                    <h1>REPORTS</h1>
+                    <div class="accent-line"></div>
+                    <p class="subtitle-text">PREVIEW & EXPORT DATA</p>
+                </div>
+
+                <div class="grid-2">
+                    <div class="card">
+                        <h3>WEEKLY REPORT</h3>
+                        <div class="form-group">
+                            <label>Week Starting (Monday)</label>
+                            <input type="date" id="reportWeekStart">
+                        </div>
+                        <button class="btn btn-primary btn-full" onclick="previewReport('weekly')">PREVIEW REPORT</button>
+                    </div>
+                    <div class="card">
+                        <h3>MONTHLY REPORT</h3>
+                        <div class="grid-2">
+                            <div class="form-group">
+                                <label>Month</label>
+                                <select id="reportMonth">
+                                    <option value="1">January</option>
+                                    <option value="2">February</option>
+                                    <option value="3">March</option>
+                                    <option value="4">April</option>
+                                    <option value="5">May</option>
+                                    <option value="6">June</option>
+                                    <option value="7">July</option>
+                                    <option value="8">August</option>
+                                    <option value="9">September</option>
+                                    <option value="10">October</option>
+                                    <option value="11">November</option>
+                                    <option value="12">December</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Year</label>
+                                <input type="number" id="reportYear" value="2024">
+                            </div>
+                        </div>
+                        <button class="btn btn-primary btn-full" onclick="previewReport('monthly')">PREVIEW REPORT</button>
+                    </div>
+                </div>
+
+                <div id="reportPreviewSection" class="card mt-20 hidden">
+                    <div class="flex-between mb-10">
+                        <h3 id="reportPreviewTitle">REPORT PREVIEW</h3>
+                        <button class="btn btn-success" onclick="downloadCurrentReport()">DOWNLOAD CSV</button>
+                    </div>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead id="reportPreviewHead">
+                                <!-- Head will be populated -->
+                            </thead>
+                            <tbody id="reportPreviewBody">
+                                <!-- Body will be populated -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Insights Content -->
+            <div id="insights-content" class="content-section">
+                <div class="header">
+                    <h1>INSIGHTS</h1>
+                    <div class="accent-line"></div>
+                    <p class="subtitle-text">SALES TRENDS & ANALYSIS</p>
+                </div>
+
+                <div class="stats-grid mb-20">
+                    <div class="stat-card">
+                        <span class="label">Total Sales (All Time)</span>
+                        <span class="value" id="totalSalesAllTime">$0.00</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="label">Avg. Daily Sales</span>
+                        <span class="value" id="avgDailySales">$0.00</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="label">Best Sales Day</span>
+                        <span class="value" id="bestSalesDay">-</span>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>SALES TRENDS</h3>
+                    <div id="trendsContent">
+                        <p>Record more sales data to see trends and analysis.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Users Content -->
+            <div id="users-content" class="content-section">
+                <div class="header">
+                    <h1>USER MANAGEMENT</h1>
+                    <div class="accent-line"></div>
+                    <p class="subtitle-text">MANAGE SYSTEM ACCESS</p>
+                </div>
+
+                <button class="btn btn-primary" onclick="openAddUserModal()">+ ADD NEW USER</button>
+
+                <div class="card mt-20">
+                    <h3>SYSTEM USERS</h3>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>USERNAME</th>
+                                <th>ROLE</th>
+                                <th>CREATED</th>
+                                <th>ACTIONS</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTableBody">
+                            <!-- Users will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODALS -->
+    <!-- Add Delivery Modal -->
+    <div id="addDeliveryModal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal('addDeliveryModal')">&times;</span>
+            <h2>ADD DELIVERY</h2>
+            <form id="addDeliveryForm">
+                <div class="form-group">
+                    <label>Delivery Date</label>
+                    <input type="date" id="deliveryDate" required>
+                </div>
+                <div class="form-group">
+                    <label>Number of Books</label>
+                    <input type="number" id="deliveryQty" min="1" value="1" required>
+                </div>
+                <div class="form-group">
+                    <label>Notes (Optional)</label>
+                    <input type="text" id="deliveryNotes" placeholder="e.g. Weekly Shipment">
+                </div>
+                <div class="modal-buttons">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('addDeliveryModal')">CANCEL</button>
+                    <button type="submit" class="btn btn-primary">ADD TO STOCK</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Activate Game Modal -->
+    <div id="addGameModal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal('addGameModal')">&times;</span>
+            <h2>ACTIVATE GAME</h2>
+            <form id="addGameForm">
+                <div class="form-group">
+                    <label>Activation Date</label>
+                    <input type="date" id="gameDate" required>
+                </div>
+                <div class="form-group">
+                    <label>Game Name</label>
+                    <input type="text" id="gameName" placeholder="e.g. Gold Rush" required>
+                </div>
+                <div class="form-group">
+                    <label>Ticket Price ($)</label>
+                    <input type="number" id="gamePrice" step="1" min="1" value="1" required>
+                </div>
+                <div class="modal-buttons">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('addGameModal')">CANCEL</button>
+                    <button type="submit" class="btn btn-primary">ACTIVATE</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Return Book Modal -->
+    <div id="returnBookModal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal('returnBookModal')">&times;</span>
+            <h2>RETURN BOOK</h2>
+            <form id="returnBookForm">
+                <div class="form-group">
+                    <label>Return Date</label>
+                    <input type="date" id="returnDate" required>
+                </div>
+                <div class="form-group">
+                    <label>Game Name</label>
+                    <input type="text" id="returnGameName" placeholder="e.g. Gold Rush" required>
+                </div>
+                <div class="form-group">
+                    <label>Ticket Price ($)</label>
+                    <input type="number" id="returnGamePrice" step="1" min="1" value="1" required>
+                </div>
+                <div class="form-group">
+                    <label>Notes / Reason</label>
+                    <textarea id="returnNotes" rows="3" placeholder="Reason for return..."></textarea>
+                </div>
+                <div class="modal-buttons">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('returnBookModal')">CANCEL</button>
+                    <button type="submit" class="btn btn-danger">RETURN BOOK</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add User Modal -->
+    <div id="addUserModal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal('addUserModal')">&times;</span>
+            <h2>ADD NEW USER</h2>
+            <form id="addUserForm">
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" id="newUsername" required>
+                </div>
+                <div class="form-group">
+                    <label>4-Digit PIN</label>
+                    <input type="password" id="newPin" maxlength="4" inputmode="numeric" required>
+                </div>
+                <div class="form-group">
+                    <label>Role</label>
+                    <select id="newRole">
+                        <option value="viewer">Viewer (Read-only)</option>
+                        <option value="admin">Admin (Full Access)</option>
+                    </select>
+                </div>
+                <div class="modal-buttons">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('addUserModal')">CANCEL</button>
+                    <button type="submit" class="btn btn-primary">ADD USER</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
